@@ -1,0 +1,10 @@
+V,a1,a2,a3
+V,a2,a1,a4
+V,a3,a1,a4
+V,a3,a4,a5
+V,a4,a2,a3
+V,a4,a3,a6
+V,a5,a3,a6
+V,a6,a4,a5
+L,a3,a1,a5
+L,a4,a2,a6
