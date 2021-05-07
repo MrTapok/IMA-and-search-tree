@@ -168,4 +168,28 @@ def sort_s_list(s_list, p_list_sorted): # сортировка списка ат
     return sorted_s_list
 
 
+def strip_from_unused_names(s_list, p_list):
+    s_names = set()
+    p_names = set()
+
+    for i in s_list:
+        s_names.add(i.name)
+    for i in p_list:
+        p_names.add(i.name)
+
+    ss_list = []
+    pp_list = []
+
+    for i in s_list:
+        if i.name in p_names:
+            ss_list.append(i)
+
+    for i in p_list:
+        if i.name in s_names:
+            pp_list.append(i)
+
+    return ss_list, pp_list
+
+
+
 

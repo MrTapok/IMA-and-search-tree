@@ -50,9 +50,9 @@ def check_f_collection(s_list, p_list, variables_dict):
     return result
 
 
-def IMA_first_full(s_list, p_list, variables_dict):
+def IMA_first_full(ss_list, p_list, variables_dict):
 
-    s_list = utils.sort_s_list(s_list, p_list)
+    s_list = utils.sort_s_list(ss_list, p_list)
 
     dict_buffer = [copy.copy(variables_dict)]
 
@@ -115,9 +115,14 @@ def IMA_first_full(s_list, p_list, variables_dict):
                     return False, {}
 
 
-def IMA_first_partial(s_list, p_list, variables_dict):
+def IMA_first_partial(sss_list, pp_list, variables_dict_1):
+
+    ss_list, p_list = utils.strip_from_unused_names(sss_list, pp_list) # убираем имена, которые точно не будут использованы
+    s_list = utils.sort_s_list(ss_list, p_list) # сортируем атомарные формулы с константами в в соответствии с порядком переменных
+    variables_counter = utils.construct_dict_counter(p_list) # выделяем количество переменных
+    variables_dict = utils.get_subdict_by_not_zero(variables_dict_1, variables_counter) # на случай если ушли какие-то переменные
     dict_buffer = [copy.copy(variables_dict)]
-    variables_counter = utils.construct_dict_counter(p_list)
+
     p_deleted = False
 
     while True:
@@ -132,7 +137,7 @@ def IMA_first_partial(s_list, p_list, variables_dict):
 
         for p_formula in p_list:
             # print(p_formula.variables)
-            name_exist = False  # флаг для возврата, если формулы решающей систему не существует
+            # флаг для возврата, если формулы решающей систему не существует
             name_found = False  # флаг для возврата, если больше имен нет
 
             if not p_formula.check_fullness(dict_buffer[
@@ -143,12 +148,10 @@ def IMA_first_partial(s_list, p_list, variables_dict):
 
                     if p_formula.name == s_formula.name and s_formula.deleted:  # если формула с таким именем уже была, но ее удалили, запоминаем существование имени
                         name_found = True
-                        name_exist = True
 
                     if p_formula.name == s_formula.name and not s_formula.deleted:  # нашли неудаленную формулу в теории подходящую к решению
                         s_formula.deleted = True  # пометили её как удаленную
                         name_found = True  # написали что такое имя существует
-                        name_exist = True
                         flag, new_variables = solve(s_formula, p_formula, dict_buffer[-1])
 
                         if not flag:
@@ -171,7 +174,6 @@ def IMA_first_partial(s_list, p_list, variables_dict):
                                 for i in p_formula.variables:
                                     variables_counter[i] -= 1
                                 break
-                                #return False, {}
 
                         if collection_status == 2:  # Если пустой - всё хорошо, возвращаем результат
                             return True, dict_buffer[-1]
@@ -180,14 +182,17 @@ def IMA_first_partial(s_list, p_list, variables_dict):
                         if p_formula.name != s_formula.name and name_found:  # срабатывает, если мы для текущей формулы с переменными перебрали все формулы с константами, с совпадающими именами
                             if len(dict_buffer) > 1:
                                 dict_buffer.remove(-1)
-                                formula_doesnt_exist = True
                                 break
                             else:
-                                return False, {}
+                                p_formula.deleted = True
+                                for i in p_formula.variables:
+                                    variables_counter[i] -= 1
+                                break
                 # выход из цикла по S
 
-                if not name_exist:  # срабатывает, если мы перебрали весь список формул с константами и не нашли ни одного подходящего предиката
-                    return False, {}
+                if p_deleted: # если мы вышли из цикла удалением атомарной формулы с переменными
+                    break
+
             # выход из цикла по P
 
 
