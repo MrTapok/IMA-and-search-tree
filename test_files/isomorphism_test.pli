@@ -18,3 +18,8 @@ V,x1,x2,x3
 V,x1,x2,x4
 V,x2,x4,x5
 L,x3,x4,x1
+-a5
+V,x2,x4,x5
+V,x1,x2,x3
+V,x1,x2,x4
+V,x3,x4,x1

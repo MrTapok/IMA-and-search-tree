@@ -191,5 +191,20 @@ def strip_from_unused_names(s_list, p_list):
     return ss_list, pp_list
 
 
+def from_p_list_to_s_list(p_list):
+    s_list = []
 
+    for k in p_list:
+        s_list.append(classes.SFormula(k.name, k.variables))
+
+    return s_list
+
+
+def dict_roll_over(dict):
+    new_dict = {}
+
+    for k in dict.keys():
+        new_dict[dict[k]] = k
+
+    return new_dict
 

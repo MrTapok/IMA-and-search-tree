@@ -55,6 +55,11 @@ def IMA_first_full(ss_list, p_list, variables_dict):
     s_list = utils.sort_s_list(ss_list, p_list)
 
     dict_buffer = [copy.copy(variables_dict)]
+    deleted_formulas_buffer = []  # формулы сейчас удаленные для всех
+    deleted_dict = {}  # словарь с формулами удаленными для конкретных формул
+
+    for p_formula in p_list:
+        deleted_dict[p_formula] = []
 
     while True:
 
@@ -71,12 +76,13 @@ def IMA_first_full(ss_list, p_list, variables_dict):
                 for s_formula in s_list:  # просматриваем список формул с константами
                     # print(s_formula.consts)
 
-                    if p_formula.name == s_formula.name and s_formula.deleted:  # если формула с таким именем уже была, но ее удалили, запоминаем существование имени
+                    if p_formula.name == s_formula.name and ((s_formula in deleted_dict[p_formula]) or (s_formula in deleted_formulas_buffer)):  # если формула с таким именем уже была, но ее удалили, запоминаем существование имени
                         name_found = True
                         name_exist = True
 
-                    if p_formula.name == s_formula.name and not s_formula.deleted:  # нашли неудаленную формулу в теории подходящую к решению
-                        s_formula.deleted = True  # пометили её как удаленную
+                    if p_formula.name == s_formula.name and not (s_formula in deleted_dict[p_formula]) and not (s_formula in deleted_formulas_buffer):  # нашли неудаленную формулу в теории подходящую к решению
+                        deleted_dict[p_formula].append(s_formula)  # пометили её как удаленную для этой формулы
+                        deleted_formulas_buffer.append(s_formula)
                         name_found = True  # написали что такое имя существует
                         name_exist = True
                         flag, new_variables = solve(s_formula, p_formula, dict_buffer[-1])
@@ -95,6 +101,7 @@ def IMA_first_full(ss_list, p_list, variables_dict):
                         if collection_status == 1:  # Если тупиковый - отменяем удаление или уходим
                             if len(dict_buffer) > 1:
                                 dict_buffer.pop()
+                                deleted_formulas_buffer.pop()
                             else:
                                 return False, {}
 
@@ -131,7 +138,7 @@ def IMA_first_partial(sss_list, pp_list, variables_dict_1):
             dict_buffer = [utils.get_subdict_by_not_zero(variables_dict, variables_counter)]
 
         if utils.check_undeleted_list(p_list):  # если все формулы закончились - то нет смысла идти дальше
-            return False, {}
+            return False, {}, []
 
         p_deleted = False
 
@@ -176,7 +183,7 @@ def IMA_first_partial(sss_list, pp_list, variables_dict_1):
                                 break
 
                         if collection_status == 2:  # Если пустой - всё хорошо, возвращаем результат
-                            return True, dict_buffer[-1]
+                            return True, dict_buffer[-1], p_list
 
                     else:
                         if p_formula.name != s_formula.name and name_found:  # срабатывает, если мы для текущей формулы с переменными перебрали все формулы с константами, с совпадающими именами
